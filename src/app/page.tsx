@@ -17,8 +17,31 @@ export default function HomePage() {
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
 
-  const [flights, setFlights] = useState<any[]>([]);
+  const [flights, setFlights] = useState<any[]>([
+  {
+    id: 1,
+    flight_no: "AI101",
+    origin: "Delhi",
+    destination: "Mumbai",
+    base_price: 5000,
+  },
 
+  {
+    id: 2,
+    flight_no: "AI301",
+    origin: "Mumbai",
+    destination: "Chennai",
+    base_price: 6200,
+  },
+
+  {
+    id: 3,
+    flight_no: "AI401",
+    origin: "Hyderabad",
+    destination: "Kolkata",
+    base_price: 6500,
+  },
+]);
   useEffect(() => {
     checkUser();
   }, []);
