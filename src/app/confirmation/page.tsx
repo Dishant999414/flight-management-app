@@ -1,45 +1,43 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function ConfirmationPage() {
+function ConfirmationContent() {
   const searchParams = useSearchParams();
-
   const pnr = searchParams.get("pnr");
 
   return (
-    <main className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow p-10 max-w-xl w-full text-center">
-        <h1 className="text-5xl mb-6">
-          🎉
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md w-full">
+        <h1 className="text-3xl font-bold text-green-600 mb-4">
+          Booking Confirmed ✈️
         </h1>
 
-        <h2 className="text-4xl font-bold mb-4">
-          Booking Confirmed
-        </h2>
-
-        <p className="text-lg text-gray-600 mb-6">
-          Your flight booking has been successfully completed.
+        <p className="text-gray-700 mb-2">
+          Your booking has been successfully completed.
         </p>
 
-        <div className="bg-gray-100 rounded-xl p-6 mb-6">
-          <p className="text-gray-500 mb-2">
-            PNR Code
-          </p>
-
-          <p className="text-3xl font-bold tracking-widest">
-            {pnr}
-          </p>
-        </div>
+        <p className="text-lg font-semibold mb-6">
+          PNR: <span className="text-blue-600">{pnr}</span>
+        </p>
 
         <Link
-          href="/"
-          className="inline-block bg-black text-white px-8 py-3 rounded-xl"
+          href="/my-bookings"
+          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
         >
-          Back To Home
+          View My Bookings
         </Link>
       </div>
-    </main>
+    </div>
+  );
+}
+
+export default function ConfirmationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfirmationContent />
+    </Suspense>
   );
 }

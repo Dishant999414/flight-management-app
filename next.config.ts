@@ -1,10 +1,11 @@
-import nextPwa from "next-pwa";
+import withPWA from "next-pwa";
 
-const withPWA = nextPwa({
+const nextConfig = {
+  reactStrictMode: true,
+  turbopack: {},
+};
+
+export default withPWA({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
-});
-
-const nextConfig = {};
-
-export default withPWA(nextConfig);
+})(nextConfig);
