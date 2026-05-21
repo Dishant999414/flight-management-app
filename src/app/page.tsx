@@ -1,143 +1,96 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 
-import { supabase } from "@/lib/supabase/client";
-import { useFlightStore } from "@/store/useFlightStore";
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-interface Flight {
-  id: string;
-  flight_no: string;
-  origin: string;
-  destination: string;
-  aircraft_type: string;
-  base_price: number;
-}
-
-export default function Home() {
-  const router = useRouter();
-
-  const { setSelectedFlight } = useFlightStore();
-
-  const [flights, setFlights] = useState<Flight[]>([]);
-  const [filteredFlights, setFilteredFlights] = useState<Flight[]>([]);
-
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
-
-  const [loading, setLoading] = useState(true);
+export default function HomePage() {
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    fetchFlights();
+    checkUser();
   }, []);
 
-  async function fetchFlights() {
-    const { data, error } = await supabase
-      .from("flights")
-      .select("*");
+  const checkUser = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!error && data) {
-      setFlights(data);
-      setFilteredFlights(data);
-    }
+    setUser(session?.user || null);
+  };
 
-    setLoading(false);
-  }
-
-  function handleSearch() {
-    const filtered = flights.filter((flight) => {
-      return (
-        flight.origin
-          .toLowerCase()
-          .includes(origin.toLowerCase()) &&
-        flight.destination
-          .toLowerCase()
-          .includes(destination.toLowerCase())
-      );
-    });
-
-    setFilteredFlights(filtered);
-  }
-
-  function handleBookFlight(flight: Flight) {
-    setSelectedFlight(flight);
-
-    router.push("/seats");
-  }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-4xl font-bold mb-8 text-center">
-        Flight Management ✈️
-      </h1>
+    <div className="min-h-screen bg-gray-100">
+      {/* Navbar */}
+      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-blue-600">
+          Flight Management ✈️
+        </h1>
 
-      {/* Search Box */}
+        <div className="flex gap-4">
+          {!user ? (
+            <>
+              <Link
+                href="/login"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              >
+                Login
+              </Link>
 
-      <div className="bg-white p-6 rounded-2xl shadow mb-8 max-w-4xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            placeholder="Origin"
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
-            className="border p-3 rounded-xl"
-          />
-
-          <input
-            type="text"
-            placeholder="Destination"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            className="border p-3 rounded-xl"
-          />
-
-          <button
-            onClick={handleSearch}
-            className="bg-black text-white rounded-xl"
-          >
-            Search Flights
-          </button>
-        </div>
-      </div>
-
-      {/* Flights */}
-
-      {loading ? (
-        <p className="text-center">Loading flights...</p>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredFlights.map((flight) => (
-            <div
-              key={flight.id}
-              className="bg-white rounded-2xl shadow p-6"
-            >
-              <h2 className="text-2xl font-bold mb-2">
-                {flight.flight_no}
-              </h2>
-
-              <p className="text-lg">
-                {flight.origin} → {flight.destination}
-              </p>
-
-              <p className="text-gray-500 mt-2">
-                {flight.aircraft_type}
-              </p>
-
-              <p className="text-2xl font-bold mt-4">
-                ₹ {flight.base_price}
-              </p>
+              <Link
+                href="/signup"
+                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+              >
+                Signup
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/my-bookings"
+                className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600"
+              >
+                My Bookings
+              </Link>
 
               <button
-                onClick={() => handleBookFlight(flight)}
-                className="mt-5 w-full bg-black text-white py-2 rounded-xl"
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
               >
-                Book Flight
+                Logout
               </button>
-            </div>
-          ))}
+            </>
+          )}
         </div>
-      )}
-    </main>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center py-20 px-4">
+        <h2 className="text-4xl font-bold mb-4 text-center">
+          Book Your Flights Easily ✈️
+        </h2>
+
+        <p className="text-gray-600 text-lg mb-8 text-center">
+          Search flights, choose seats, and manage bookings seamlessly.
+        </p>
+
+        <Link
+          href="/booking"
+          className="bg-black text-white px-8 py-4 rounded-xl text-lg hover:bg-gray-800 transition"
+        >
+          Search Flights
+        </Link>
+      </div>
+    </div>
   );
 }
