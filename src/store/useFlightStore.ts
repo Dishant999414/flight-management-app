@@ -1,91 +1,56 @@
 import { create } from "zustand";
-
 import { persist } from "zustand/middleware";
 
+interface Flight {
+  id: string;
+  flight_no: string;
+  origin: string;
+  destination: string;
+  base_price: number;
+}
+
+interface Seat {
+  id: string;
+  seat_number: string;
+  class: string;
+  is_available: boolean;
+  extra_fee: number;
+}
+
 interface FlightStore {
-  selectedFlight: any;
-  selectedSeat: any;
+  selectedFlight: Flight | null;
+  selectedSeat: Seat | null;
 
-  passengerData: {
-    fullName: string;
-    nationality: string;
-  };
-
-  setSelectedFlight: (flight: any) => void;
-
-  setSelectedSeat: (seat: any) => void;
-
-  setPassengerData: (
-    data: {
-      fullName: string;
-      nationality: string;
-    }
-  ) => void;
+  setSelectedFlight: (flight: Flight) => void;
+  setSelectedSeat: (seat: Seat) => void;
 
   resetBooking: () => void;
 }
 
-export const useFlightStore =
-  create<FlightStore>()(
-    persist(
-      (set) => ({
-        selectedFlight: null,
+export const useFlightStore = create<FlightStore>()(
+  persist(
+    (set) => ({
+      selectedFlight: null,
+      selectedSeat: null,
 
-        selectedSeat: null,
-
-        passengerData: {
-          fullName: "",
-          nationality: "",
-        },
-
-        setSelectedFlight: (flight) =>
-          set({
-            selectedFlight: flight,
-          }),
-
-        setSelectedSeat: (seat) =>
-          set({
-            selectedSeat: seat,
-          }),
-
-        setPassengerData: (data) =>
-          set({
-            passengerData: data,
-          }),
-
-        resetBooking: () =>
-          set({
-            selectedFlight: null,
-
-            selectedSeat: null,
-
-            passengerData: {
-              fullName: "",
-              nationality: "",
-            },
-          }),
-      }),
-
-      {
-        name: "flight-booking-storage",
-
-        partialize: (state) => ({
-          selectedFlight:
-            state.selectedFlight,
-
-          selectedSeat:
-            state.selectedSeat,
-
-          passengerData: {
-            fullName:
-              state.passengerData
-                .fullName,
-
-            nationality:
-              state.passengerData
-                .nationality,
-          },
+      setSelectedFlight: (flight) =>
+        set({
+          selectedFlight: flight,
         }),
-      }
-    )
-  );
+
+      setSelectedSeat: (seat) =>
+        set({
+          selectedSeat: seat,
+        }),
+
+      resetBooking: () =>
+        set({
+          selectedFlight: null,
+          selectedSeat: null,
+        }),
+    }),
+    {
+      name: "flight-booking-storage",
+    }
+  )
+);

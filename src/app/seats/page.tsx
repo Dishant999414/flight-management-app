@@ -52,17 +52,19 @@ export default function SeatsPage() {
 }, [selectedFlight]);
 
   async function fetchSeats() {
-    const { data, error } = await supabase
-      .from("seats")
-      .select("*")
-      .eq("flight_id", selectedFlight.id);
+  if (!selectedFlight) return;
 
-    if (!error && data) {
-      setSeats(data);
-    }
+  const { data, error } = await supabase
+    .from("seats")
+    .select("*")
+    .eq("flight_id", selectedFlight.id);
 
-    setLoading(false);
+  if (!error && data) {
+    setSeats(data);
   }
+
+  setLoading(false);
+}
 
   if (!selectedFlight) {
     return (
