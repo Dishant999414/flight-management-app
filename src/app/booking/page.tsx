@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabase/client";
@@ -21,6 +21,15 @@ export default function BookingPage() {
   const [dob, setDob] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setChecking(false);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, []);
 
   async function handleBooking() {
     if (!selectedFlight || !selectedSeat) {
@@ -38,6 +47,7 @@ export default function BookingPage() {
 
     if (!user) {
       alert("Please login first");
+      setLoading(false);
       return;
     }
 
@@ -52,6 +62,7 @@ export default function BookingPage() {
 
     if (!seatReserved) {
       alert("Seat already booked");
+      setLoading(false);
       return;
     }
 
@@ -104,21 +115,31 @@ export default function BookingPage() {
       },
     ]);
 
-    resetBooking();
-
     router.push(`/confirmation?pnr=${pnr}`);
+    setTimeout(() => {
+  resetBooking();
+}, 1000);
   }
 
-  if (!selectedFlight || !selectedSeat) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <h1 className="text-3xl font-bold">
-          Missing Booking Details
-        </h1>
-      </main>
-    );
-  }
+  if (checking) {
+  return (
+    <main className="min-h-screen flex items-center justify-center">
+      <h1 className="text-2xl font-bold">
+        Loading booking...
+      </h1>
+    </main>
+  );
+}
 
+if (!selectedFlight || !selectedSeat) {
+  return (
+    <main className="min-h-screen flex items-center justify-center">
+      <h1 className="text-3xl font-bold">
+        Missing Booking Details
+      </h1>
+    </main>
+  );
+}
   return (
     <main className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow p-8">
