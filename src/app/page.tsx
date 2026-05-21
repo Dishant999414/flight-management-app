@@ -85,7 +85,7 @@ export default function HomePage() {
         </p>
 
         <Link
-          href="/booking"
+          href="/seats"
           className="bg-black text-white px-8 py-4 rounded-xl text-lg hover:bg-gray-800 transition"
         >
           Search Flights

@@ -20,53 +20,75 @@ export default function SeatsPage() {
   const {
     selectedFlight,
     selectedSeat,
+    setSelectedFlight,
     setSelectedSeat,
   } = useFlightStore();
 
   const [seats, setSeats] = useState<Seat[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Load default flight if none selected
   useEffect(() => {
-  if (selectedFlight) {
-    fetchSeats();
+    async function loadDefaultFlight() {
+      if (!selectedFlight) {
+        const { data } = await supabase
+          .from("flights")
+          .select("*")
+          .limit(1)
+          .single();
 
-    const channel = supabase
-      .channel("seats-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "seats",
-        },
-        () => {
-          fetchSeats();
+        if (data) {
+          setSelectedFlight(data);
         }
-      )
-      .subscribe();
+      }
+    }
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }
-}, [selectedFlight]);
+    loadDefaultFlight();
+  }, [selectedFlight, setSelectedFlight]);
+
+  // Fetch seats
+  useEffect(() => {
+    if (selectedFlight) {
+      fetchSeats();
+
+      const channel = supabase
+        .channel("seats-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "seats",
+          },
+          () => {
+            fetchSeats();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [selectedFlight]);
 
   async function fetchSeats() {
-  if (!selectedFlight) return;
+    if (!selectedFlight) return;
 
-  const { data, error } = await supabase
-    .from("seats")
-    .select("*")
-    .eq("flight_id", selectedFlight.id);
+    const { data, error } = await supabase
+      .from("seats")
+      .select("*")
+      .eq("flight_id", selectedFlight.id);
 
-  if (!error && data) {
-    setSeats(data);
+    if (!error && data) {
+      setSeats(data);
+    }
+
+    setLoading(false);
   }
 
-  setLoading(false);
-}
-
-  if (!selectedFlight) {
+  // Prevent flashing error while loading
+  if (!selectedFlight && !loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <h1 className="text-3xl font-bold">
@@ -84,16 +106,18 @@ export default function SeatsPage() {
 
       {/* Flight Info */}
 
-      <div className="bg-white rounded-2xl shadow p-6 mb-8">
-        <h2 className="text-2xl font-bold">
-          {selectedFlight.flight_no}
-        </h2>
+      {selectedFlight && (
+        <div className="bg-white rounded-2xl shadow p-6 mb-8">
+          <h2 className="text-2xl font-bold">
+            {selectedFlight.flight_no}
+          </h2>
 
-        <p className="mt-2 text-lg">
-          {selectedFlight.origin} →{" "}
-          {selectedFlight.destination}
-        </p>
-      </div>
+          <p className="mt-2 text-lg">
+            {selectedFlight.origin} →{" "}
+            {selectedFlight.destination}
+          </p>
+        </div>
+      )}
 
       {/* Legend */}
 
